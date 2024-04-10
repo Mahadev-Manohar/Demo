@@ -11,11 +11,11 @@ int count = 0;
 int buffer[10];
 
 void* producer(void* args) {
-    int num = ((int)args); // Dereference the argument properly
+    int* num = ((int*)args); // Dereference the argument properly
     sem_wait(&empty);
     pthread_mutex_lock(&mutex);
     buffer[count] = rand() % 100;
-    printf("Producer %d produced %d\n", num + 1, buffer[count]);
+    printf("Producer %d produced %d\n", *num + 1, buffer[count]);
     count++;
     pthread_mutex_unlock(&mutex);
     sem_post(&full);
@@ -24,15 +24,15 @@ void* producer(void* args) {
 }
 
 void* consumer(void* args) {
-    int num = ((int)args); // Dereference the argument properly
+    int* num = ((int*)args); // Dereference the argument properly
     sem_wait(&full);
     pthread_mutex_lock(&mutex);
     count--;
-    printf("Consumer %d consumed %d\n", num + 1, buffer[count]);
+    printf("Consumer %d consumed %d\n", *num + 1, buffer[count]);
     pthread_mutex_unlock(&mutex);
     sem_post(&empty);
     sleep(1); // Add sleep to ensure the thread doesn't exit immediately
-    pthread_exit(NULL);
+   pthread_exit(NULL);
 }
 
 int main() {
@@ -62,7 +62,7 @@ int main() {
     for (i = 0; i < numberOfConsumers; i++) {
         cons_args[i] = i; // Assign thread index as argument
         pthread_create(&cons[i], NULL, consumer, (void*)&cons_args[i]); // Pass address of argument
-    }
+     }
 
     for (i = 0; i < numberOfProducers; i++) {
         pthread_join(prod[i], NULL);
